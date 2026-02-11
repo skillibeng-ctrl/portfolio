@@ -1,0 +1,28 @@
+.stars-bg-container {
+  overflow: hidden;
+}
+
+.stars-fallback {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, #000000 0%, #000000 70%, #1a1a2e 100%);
+}
+
+/* Fade-in for canvas */
+canvas {
+  opacity: 0;
+  animation: fadeIn 1s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  canvas {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
