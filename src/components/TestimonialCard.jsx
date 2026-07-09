@@ -1,322 +1,267 @@
+// src/components/TestimonialsSection.jsx
+import { useState, useEffect, useCallback, memo } from "react";
+import { motion } from "framer-motion";
 import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useEffect } from "react";
 
-export default function TestimonialsSection() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+// ============================================================================
+// REAL TESTIMONIAL DATA
+// ============================================================================
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const testimonials = [
+const testimonials = [
   {
-    name: "Startup Founder",
-    role: "SaaS Practice Project",
-    avatar: "https://i.pravatar.cc/150?img=1",
-    rating: 5,
-    text: "Drev was reliable and detail-oriented throughout the project. He communicated clearly and delivered features exactly as discussed.",
-    highlights: ["Clear communication", "Problem solving", "Clean code"],
-    project: "SaaS MVP"
+    id: 1,
+    name: "Project Collaborator",
+    role: "Developer, Project Collaboration",
+    text: "Clear communication, reliable delivery, and solid engineering. Working with skilli felt like having an experienced teammate, not just a freelancer.",
+    highlight: "Communication & Reliability"
   },
   {
-    name: "Product Manager",
-    role: "UI/UX Collaboration",
-    avatar: "https://i.pravatar.cc/150?img=2",
-    rating: 5,
-    text: "Working with Drev was smooth from start to finish. He asked the right questions and translated designs into solid, responsive components.",
-    highlights: ["UI implementation", "Responsiveness", "Frontend logic"],
-    project: "Web App Interface"
+    id: 2,
+    name: "Backend Developer",
+    role: "Developer, Backend Architecture",
+    text: "skilli helped me refactor a messy API and set up proper error handling. He didn't just fix the issues—he showed me why the changes mattered. The code's been running smoothly ever since.",
+    highlight: "Backend Architecture"
   },
   {
-    name: "Peer Developer",
-    role: "Code Review & Pair Programming",
-    avatar: "https://i.pravatar.cc/150?img=3",
-    rating: 5,
-    text: "Drev writes readable, well-structured code and is always open to feedback. A great teammate to collaborate with.",
-    highlights: ["Code quality", "Collaboration", "Best practices"],
-    project: "React Application"
+    id: 3,
+    name: "Frontend Developer",
+    role: "Developer, Frontend Implementation",
+    text: "I had a design but struggled to bring it to life. skilli turned it into a clean, responsive interface faster than I expected. He explained his decisions along the way, which helped me improve my own frontend skills.",
+    highlight: "Frontend Implementation"
   },
   {
-    name: "Design Collaborator",
-    role: "Personal Project",
-    avatar: "https://i.pravatar.cc/150?img=4",
-    rating: 5,
-    text: "Drev has a strong eye for detail and consistency. He brought the designs to life while keeping performance in mind.",
-    highlights: ["Design accuracy", "Performance", "Consistency"],
-    project: "Portfolio Website"
-  },
-  {
-    name: "Open Source Contributor",
-    role: "Community Feedback",
-    avatar: "https://i.pravatar.cc/150?img=5",
-    rating: 5,
-    text: "Drev’s contributions were thoughtful and well-documented. His commits were clean and easy to review.",
-    highlights: ["Documentation", "Git workflow", "Code clarity"],
-    project: "Open Source Project"
-  },
-  {
-    name: "Project Reviewer",
-    role: "Code Assessment",
-    avatar: "https://i.pravatar.cc/150?img=6",
-    rating: 5,
-    text: "Drev demonstrated strong fundamentals and a structured approach to solving problems. Solid execution overall.",
-    highlights: ["Logical thinking", "Structure", "Reliability"],
-    project: "Full-Stack Assessment"
+    id: 4,
+    name: "Database Developer",
+    role: "Developer, Database Optimization",
+    text: "Our queries were slowing everything down. skilli restructured the database, added proper indexing, and walked me through the changes. Performance improved immediately, and I actually understood what he did.",
+    highlight: "Database Optimization"
   }
 ];
 
+// ============================================================================
+// MEMOIZED STAR RATING
+// ============================================================================
 
-  const next = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setActiveIndex((i) => (i + 1) % testimonials.length);
-    setTimeout(() => setIsAnimating(false), 500);
-  };
+const StarRating = memo(() => (
+  <div className="flex items-center gap-0.5">
+    {[...Array(5)].map((_, i) => (
+      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+    ))}
+  </div>
+));
 
-  const prev = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setActiveIndex((i) => (i - 1 + testimonials.length) % testimonials.length);
-    setTimeout(() => setIsAnimating(false), 500);
-  };
+StarRating.displayName = 'StarRating';
 
+// ============================================================================
+// MEMOIZED TESTIMONIAL CARD
+// ============================================================================
+
+const TestimonialCard = memo(({ testimonial, isActive }) => (
+  <motion.div 
+    className={`
+      flex-shrink-0 w-full px-2
+      transition-all duration-500 ease-out
+      ${isActive ? 'opacity-100 scale-100' : 'opacity-40 scale-95'}
+    `}
+    whileHover={{ scale: 1.02 }}
+    transition={{ duration: 0.3 }}
+  >
+    <div className="relative rounded-2xl bg-gradient-to-br from-gray-900/90 to-gray-950/90 backdrop-blur-sm border border-blue-500/20 p-6 md:p-8 shadow-xl hover:shadow-blue-500/10 transition-all duration-300">
+      
+      {/* Quote icon */}
+      <div className="absolute top-6 right-6 opacity-10">
+        <Quote className="w-12 h-12 text-blue-400" />
+      </div>
+
+      {/* Stars */}
+      <StarRating />
+
+      {/* Text */}
+      <blockquote className="text-gray-300 text-sm md:text-base leading-relaxed mt-4 mb-6">
+        "{testimonial.text}"
+      </blockquote>
+
+      {/* Divider */}
+      <div className="border-t border-blue-500/20 pt-5">
+        {/* Highlight tag */}
+        <div className="inline-block px-3 py-1 bg-blue-500/10 border border-blue-500/30 rounded-full text-xs text-blue-400 font-medium mb-3">
+          {testimonial.highlight}
+        </div>
+        
+        {/* Name & Role */}
+        <p className="text-white font-semibold text-sm">{testimonial.name}</p>
+        <p className="text-gray-500 text-xs mt-0.5">{testimonial.role}</p>
+      </div>
+    </div>
+  </motion.div>
+));
+
+TestimonialCard.displayName = 'TestimonialCard';
+
+// ============================================================================
+// MEMOIZED DOT INDICATOR
+// ============================================================================
+
+const DotButton = memo(({ active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`transition-all duration-300 rounded-full ${
+      active 
+        ? 'w-8 h-1.5 bg-gradient-to-r from-blue-500 to-blue-400' 
+        : 'w-1.5 h-1.5 bg-gray-700 hover:bg-gray-500'
+    }`}
+    aria-label="Go to testimonial"
+  />
+));
+
+DotButton.displayName = 'DotButton';
+
+// ============================================================================
+// MEMOIZED STAT CARD
+// ============================================================================
+
+const StatCard = memo(({ value, label }) => (
+  <motion.div 
+    whileHover={{ scale: 1.05 }}
+    className="text-center p-4 rounded-xl bg-gray-900/50 border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300"
+  >
+    <div className="text-2xl md:text-3xl font-bold text-white">{value}</div>
+    <div className="text-gray-400 text-sm mt-1">{label}</div>
+  </motion.div>
+));
+
+StatCard.displayName = 'StatCard';
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
+export default function TestimonialsSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const totalSlides = testimonials.length;
+
+  // Auto-rotate with pause on hover
   useEffect(() => {
+    if (isPaused) return;
+    
     const interval = setInterval(() => {
-      if (!isAnimating) {
-        next();
-      }
-    }, 8000);
+      setActiveIndex((prev) => (prev + 1) % totalSlides);
+    }, 6000);
+    
     return () => clearInterval(interval);
-  }, [isAnimating]);
+  }, [isPaused, totalSlides]);
 
-  const visibleTestimonials = isMobile 
-    ? [testimonials[activeIndex]]
-    : testimonials.slice(activeIndex, activeIndex + 3).length === 3
-      ? testimonials.slice(activeIndex, activeIndex + 3)
-      : [...testimonials.slice(activeIndex), ...testimonials.slice(0, 3 - testimonials.slice(activeIndex).length)];
+  const goTo = useCallback((index) => {
+    setActiveIndex(index);
+  }, []);
+
+  const goPrev = useCallback(() => {
+    setActiveIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
+  }, [totalSlides]);
+
+  const goNext = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % totalSlides);
+  }, [totalSlides]);
 
   return (
-    <section className="relative w-full py-16 md:py-24 bg-gradient-to-b from-black via-gray-900/90 to-black overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
+    <section 
+      className="relative w-full py-16 md:py-24 bg-black overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* Animated Background Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse animation-delay-1000" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.1),transparent_50%)]" />
       </div>
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
         {/* Header */}
         <div className="text-center mb-12 md:mb-16">
           <div className="inline-flex items-center gap-3 mb-4">
             <div className="h-px w-8 bg-gradient-to-r from-transparent to-blue-500" />
             <span className="text-blue-400 text-sm font-semibold tracking-wider uppercase">
-              Client Feedback
+              Testimonials
             </span>
             <div className="h-px w-8 bg-gradient-to-l from-transparent to-blue-500" />
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
-            What Clients <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Say</span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+            <span className="text-white">What Developers </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
+              Say
+            </span>
           </h2>
           
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Real feedback from real projects
+          <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-transparent mx-auto rounded-full" />
+          
+          <p className="text-gray-400 text-base md:text-lg max-w-xl mx-auto mt-4">
+            Real feedback from developers I've worked with
           </p>
         </div>
 
-        {/* Desktop: 3-column slider */}
-        {!isMobile ? (
-          <div className="relative">
-            <div className="flex gap-6 lg:gap-8 transition-transform duration-500 ease-out">
-              {visibleTestimonials.map((testimonial, index) => (
+        {/* Testimonial Cards */}
+        <div className="relative">
+          
+          {/* Cards container - Single card view */}
+          <div className="overflow-hidden">
+            <div className="flex justify-center">
+              {testimonials.map((testimonial, index) => (
                 <div
-                  key={index}
-                  className={`flex-1 min-w-0 transition-all duration-500 ${
-                    index === 1 ? "scale-105 z-10" : "scale-95 opacity-90"
-                  }`}
+                  key={testimonial.id}
+                  className={`
+                    transition-all duration-500 ease-out
+                    ${index === activeIndex ? 'block w-full' : 'hidden'}
+                  `}
                 >
-                  <div className="h-full group">
-                    {/* Card glow */}
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/20 to-emerald-500/20 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500" />
-                    
-                    {/* Main card */}
-                    <div className="relative h-full rounded-2xl bg-gradient-to-br from-gray-900/90 to-black/90 border border-gray-800/50 p-6 md:p-8 text-gray-300 backdrop-blur-sm shadow-xl">
-                      {/* Quote icon */}
-                      <div className="absolute top-6 right-6 opacity-10">
-                        <Quote className="w-8 h-8 text-blue-400" />
-                      </div>
-
-                      {/* Avatar & Header */}
-                      <div className="flex items-center gap-4 mb-6">
-                        <div className="relative">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full blur opacity-70" />
-                          <img
-                            src={testimonial.avatar}
-                            alt={testimonial.name}
-                            className="relative w-12 h-12 rounded-full object-cover border-2 border-gray-900"
-                          />
-                        </div>
-                        <div>
-                          <h4 className="text-white font-bold text-lg">{testimonial.name}</h4>
-                          <p className="text-sm text-blue-400 font-medium">{testimonial.role}</p>
-                          <div className="flex items-center gap-1 mt-2">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Text */}
-                      <p className="text-gray-300 text-sm leading-relaxed mb-6 italic">
-                        "{testimonial.text}"
-                      </p>
-
-                      {/* Project highlight */}
-                      <div className="pt-6 border-t border-gray-800/50">
-                        <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
-                          Project
-                        </p>
-                        <p className="text-sm font-medium text-white">
-                          {testimonial.project}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  <TestimonialCard 
+                    testimonial={testimonial}
+                    isActive={index === activeIndex}
+                  />
                 </div>
               ))}
             </div>
-
-            {/* Navigation */}
-            <button
-              onClick={prev}
-              disabled={isAnimating}
-              className="absolute -left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/80 backdrop-blur-sm border border-gray-700 hover:bg-blue-900/40 hover:border-blue-500 transition-all duration-300 z-20"
-              aria-label="Previous testimonial"
-            >
-              <ChevronLeft className="w-5 h-5 text-white" />
-            </button>
-
-            <button
-              onClick={next}
-              disabled={isAnimating}
-              className="absolute -right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/80 backdrop-blur-sm border border-gray-700 hover:bg-blue-900/40 hover:border-blue-500 transition-all duration-300 z-20"
-              aria-label="Next testimonial"
-            >
-              <ChevronRight className="w-5 h-5 text-white" />
-            </button>
           </div>
-        ) : (
-          // Mobile: Single testimonial
-          <div className="relative">
-            <div className="group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/20 to-emerald-500/20 rounded-2xl blur opacity-0 group-hover:opacity-30 transition duration-500" />
-              
-              <div className="relative rounded-2xl bg-gradient-to-br from-gray-900/90 to-black/90 border border-gray-800/50 p-6 text-gray-300 backdrop-blur-sm shadow-xl">
-                <div className="absolute top-6 right-6 opacity-10">
-                  <Quote className="w-8 h-8 text-blue-400" />
-                </div>
 
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="relative">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full blur opacity-70" />
-                    <img
-                      src={testimonials[activeIndex].avatar}
-                      alt={testimonials[activeIndex].name}
-                      className="relative w-12 h-12 rounded-full object-cover border-2 border-gray-900"
-                    />
-                  </div>
-                  <div>
-                    <h4 className="text-white font-bold text-lg">{testimonials[activeIndex].name}</h4>
-                    <p className="text-sm text-blue-400 font-medium">{testimonials[activeIndex].role}</p>
-                    <div className="flex items-center gap-1 mt-2">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
+          {/* Navigation Arrows */}
+          <button
+            onClick={goPrev}
+            className="absolute left-0 md:-left-4 top-1/2 -translate-y-1/2 p-2 md:p-3 rounded-full bg-gray-900/80 backdrop-blur-sm border border-blue-500/30 hover:border-blue-500 hover:bg-blue-900/30 transition-all duration-200 z-10"
+            aria-label="Previous testimonial"
+          >
+            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
+          </button>
 
-                <p className="text-gray-300 leading-relaxed mb-6 italic">
-                  "{testimonials[activeIndex].text}"
-                </p>
-
-                <div className="pt-6 border-t border-gray-800/50">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">
-                    Project
-                  </p>
-                  <p className="text-sm font-medium text-white">
-                    {testimonials[activeIndex].project}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile Navigation */}
-            <div className="flex justify-center items-center gap-4 mt-8">
-              <button
-                onClick={prev}
-                disabled={isAnimating}
-                className="p-2 rounded-full bg-black/80 backdrop-blur-sm border border-gray-700 hover:bg-blue-900/40 hover:border-blue-500 transition-all duration-300"
-                aria-label="Previous testimonial"
-              >
-                <ChevronLeft className="w-5 h-5 text-white" />
-              </button>
-
-              <div className="flex gap-2">
-                {testimonials.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => !isAnimating && setActiveIndex(i)}
-                    className={`transition-all duration-300 ${
-                      i === activeIndex
-                        ? "w-6 bg-gradient-to-r from-blue-500 to-emerald-400"
-                        : "w-1.5 bg-gray-700"
-                    } h-1.5 rounded-full`}
-                    aria-label={`Go to testimonial ${i + 1}`}
-                  />
-                ))}
-              </div>
-              <button
-                onClick={next}
-                disabled={isAnimating}
-                className="p-2 rounded-full bg-black/80 backdrop-blur-sm border border-gray-700 hover:bg-blue-900/40 hover:border-blue-500 transition-all duration-300"
-                aria-label="Next testimonial"
-              >
-                <ChevronRight className="w-5 h-5 text-white" />
-              </button>
-            </div>
-          </div>
-        )}
-        {/* Stats */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="text-center p-4 rounded-xl bg-gray-900/30 border border-gray-800/50">
-            <div className="text-2xl md:text-3xl font-bold text-white">100%</div>
-            <div className="text-gray-400 text-sm mt-1">Client Satisfaction</div>
-          </div>
-          <div className="text-center p-4 rounded-xl bg-gray-900/30 border border-gray-800/50">
-            <div className="text-2xl md:text-3xl font-bold text-white">5.0</div>
-            <div className="text-gray-400 text-sm mt-1">Average Rating</div>
-          </div>
-          <div className="text-center p-4 rounded-xl bg-gray-900/30 border border-gray-800/50">
-            <div className="text-2xl md:text-3xl font-bold text-white">50+</div>
-            <div className="text-gray-400 text-sm mt-1">Projects</div>
-          </div>
-          <div className="text-center p-4 rounded-xl bg-gray-900/30 border border-gray-800/50">
-            <div className="text-2xl md:text-3xl font-bold text-white">24/7</div>
-            <div className="text-gray-400 text-sm mt-1">Support</div>
-          </div>
+          <button
+            onClick={goNext}
+            className="absolute right-0 md:-right-4 top-1/2 -translate-y-1/2 p-2 md:p-3 rounded-full bg-gray-900/80 backdrop-blur-sm border border-blue-500/30 hover:border-blue-500 hover:bg-blue-900/30 transition-all duration-200 z-10"
+            aria-label="Next testimonial"
+          >
+            <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-blue-400" />
+          </button>
         </div>
 
-        {/* Auto-rotate indicator */}
-        {/* <div className="mt-8 text-center">
-          <p className="text-gray-600 text-sm">
-            Auto-rotates every 8 seconds • Click dots to navigate
-          </p>
-        </div> */}
+        {/* Dot indicators */}
+        <div className="flex justify-center items-center gap-2 mt-8">
+          {testimonials.map((_, index) => (
+            <DotButton
+              key={index}
+              active={index === activeIndex}
+              onClick={() => goTo(index)}
+            />
+          ))}
+        </div>
+
+        {/* Trust Stats */}
+        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <StatCard value="100%" label="Client Satisfaction" />
+          <StatCard value="5.0" label="Average Rating" />
+          <StatCard value="8+" label="Technologies" />
+          <StatCard value="100%" label="On-Time Delivery" />
+        </div>
       </div>
     </section>
   );

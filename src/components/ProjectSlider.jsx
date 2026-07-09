@@ -1,397 +1,452 @@
-import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, ExternalLink, Eye, Code, Server, Globe, Database, Cpu, Layers } from "lucide-react";
+// src/components/ProjectSlider.jsx
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  ExternalLink, 
+  Github,
+  Eye,
+  Briefcase,
+  TrendingUp,
+  Users,
+  ShoppingBag,
+  Brain,
+  Database,
+  Cloud,
+  Rocket,
+  Zap
+} from 'lucide-react';
 
-const projects = [
+// ============================================================================
+// PROJECT DATA
+// ============================================================================
+
+const PROJECTS = [
   {
-    title: "Binns Media Platform",
-    desc: "Full-stack media CMS with real-time analytics, user subscriptions, and content delivery network.",
-    img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    frontend: ["HTML5", "CSS3", "JavaScript", "React", "React Native"],
-    backend: ["Node.js", "Java", "Spring Boot", "Microservices"],
-    database: ["MongoDB", "PostgreSQL", "pgAdmin", "SQL"],
-    liveLink: "https://binnsmedia.com",
-    caseLink: "/case-study/binns-media",
-    github: "https://github.com/yourusername/binns-media"
+    id: 1,
+    title: "JobSearch Pro",
+    description: "AI-powered job matching platform connecting developers with tech companies",
+    category: "Job Search",
+    icon: Briefcase,
+    problem: "Job seekers waste 40+ hours applying to mismatched positions",
+    solution: "ML algorithm matches candidates based on skills, experience, and company culture",
+    results: [
+      { label: "Match Rate", value: 85, suffix: "%", icon: TrendingUp },
+      { label: "Time Saved", value: 30, prefix: "-", suffix: "hrs", icon: Users },
+      { label: "Companies", value: 250, suffix: "+", icon: Briefcase }
+    ],
+    technologies: ["React", "Python", "TensorFlow", "PostgreSQL", "AWS"],
+    links: {
+      demo: "https://jobsearchpro.demo",
+      github: "https://github.com/yourusername/jobsearchpro",
+      caseStudy: "/case-studies/jobsearchpro"
+    },
+    image: "https://images.unsplash.com/photo-1516383740770-fbcc5ccbece0?auto=format&fit=crop&w=600&q=80"
   },
   {
-    title: "Quantum Analytics Dashboard",
-    desc: "Real-time data visualization platform with WebSocket streaming and predictive AI models.",
-    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    frontend: ["HTML5", "CSS3", "JavaScript", "React", "React Native"],
-    backend: ["Node.js", "Java", "Spring Boot", "Microservices"],
-    database: ["MongoDB", "PostgreSQL", "pgAdmin", "SQL"],
-    liveLink: "https://quantumanalytics.com",
-    caseLink: "/case-study/quantum-analytics",
-    github: "https://github.com/yourusername/quantum-analytics"
+    id: 2,
+    title: "AI Content Studio",
+    description: "Enterprise-grade AI API for content generation and analysis",
+    category: "AI API",
+    icon: Brain,
+    problem: "Content teams spend 60% time on repetitive writing tasks",
+    solution: "REST API with GPT-4 integration for instant content generation",
+    results: [
+      { label: "Speed", value: 10, prefix: "+", suffix: "x", icon: Zap },
+      { label: "Accuracy", value: 94, suffix: "%", icon: Brain },
+      { label: "API Calls", value: 500, suffix: "k", icon: Database }
+    ],
+    technologies: ["Node.js", "OpenAI", "Redis", "MongoDB", "Docker"],
+    links: {
+      demo: "https://aistudio.demo",
+      github: "https://github.com/yourusername/aistudio",
+      caseStudy: "/case-studies/aistudio"
+    },
+    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=600&q=80"
   },
   {
-    title: "Nexus Design System",
-    desc: "Enterprise design system with component library, documentation, and deployment automation.",
-    img: "https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    frontend: ["HTML5", "CSS3", "JavaScript", "React", "React Native"],
-    backend: ["Node.js", "Java", "Spring Boot", "Microservices"],
-    database: ["MongoDB", "PostgreSQL", "pgAdmin", "SQL"],
-    liveLink: "https://nexus-ds.com",
-    caseLink: "/case-study/nexus-design-system",
-    github: "https://github.com/yourusername/nexus-ds"
-  },
+    id: 3,
+    title: "ShopEase Commerce",
+    description: "Full-stack e-commerce platform with real-time inventory",
+    category: "E-Commerce",
+    icon: ShoppingBag,
+    problem: "Small retailers lack affordable, feature-rich online stores",
+    solution: "Complete solution with payments, inventory, and analytics",
+    results: [
+      { label: "Conversion", value: 43, suffix: "%", icon: TrendingUp },
+      { label: "Orders", value: 50, suffix: "k", icon: ShoppingBag },
+      { label: "Uptime", value: 99.9, suffix: "%", icon: Cloud }
+    ],
+    technologies: ["Next.js", "Stripe", "PostgreSQL", "Tailwind", "Redis"],
+    links: {
+      demo: "https://shopease.demo",
+      github: "https://github.com/yourusername/shopease",
+      caseStudy: "/case-studies/shopease"
+    },
+    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80"
+  }
 ];
 
-export default function FullStackProjectSlider() {
-  const [index, setIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+// ============================================================================
+// HELPER COMPONENTS
+// ============================================================================
 
+const TechBadge = ({ tech, index }) => (
+  <motion.span
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ delay: 0.2 + index * 0.05 }}
+    className="px-2 py-1 text-xs bg-blue-900/30 text-blue-300 rounded-md border border-blue-500/30 font-mono"
+  >
+    {tech}
+  </motion.span>
+);
+
+const ResultMetric = ({ label, value, prefix = '', suffix = '', icon: Icon }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4 }}
+    className="text-center"
+  >
+    <div className="flex items-center justify-center gap-1 mb-1">
+      <Icon className="w-3 h-3 text-blue-400" />
+      <span className="text-xs text-gray-400">{label}</span>
+    </div>
+    <p className="text-lg font-bold text-white">
+      {prefix}{value}{suffix}
+    </p>
+  </motion.div>
+);
+
+const NavigationButton = ({ direction, onClick, disabled }) => (
+  <motion.button
+    onClick={onClick}
+    disabled={disabled}
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    className={`
+      absolute top-1/2 -translate-y-1/2 z-10
+      w-10 h-10 flex items-center justify-center
+      bg-black/80 backdrop-blur-sm rounded-full border border-blue-500/30
+      text-blue-400 hover:bg-blue-600 hover:text-white hover:border-blue-400
+      transition-all duration-200
+      ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+      ${direction === 'left' ? 'left-4' : 'right-4'}
+    `}
+  >
+    {direction === 'left' ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+  </motion.button>
+);
+
+const DotIndicator = ({ active, onClick }) => (
+  <motion.button
+    onClick={onClick}
+    whileHover={{ scale: 1.2 }}
+    className={`
+      h-1.5 rounded-full transition-all duration-200
+      ${active ? 'w-8 bg-blue-500' : 'w-1.5 bg-gray-600 hover:bg-gray-500'}
+    `}
+  />
+);
+
+// ============================================================================
+// MAIN COMPONENT - BLACK & BLUE THEME
+// ============================================================================
+
+const ProjectSlider = ({ projects = PROJECTS, autoPlay = true, autoPlayDelay = 5000 }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(autoPlay);
+  const [direction, setDirection] = useState(0);
+  const autoPlayRef = useRef(null);
+  const containerRef = useRef(null);
+
+  // Auto-play logic
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const prev = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setIndex((i) => (i - 1 + projects.length) % projects.length);
-    setTimeout(() => setIsAnimating(false), 400);
-  };
-
-  const next = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setIndex((i) => (i + 1) % projects.length);
-    setTimeout(() => setIsAnimating(false), 400);
-  };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isAnimating) {
-        setIndex((i) => (i + 1) % projects.length);
+    if (isAutoPlaying && projects.length > 1) {
+      autoPlayRef.current = setInterval(() => {
+        nextSlide();
+      }, autoPlayDelay);
+    }
+    
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
       }
-    }, 8000);
-    return () => clearInterval(interval);
-  }, [isAnimating]);
+    };
+  }, [isAutoPlaying, currentIndex, projects.length, autoPlayDelay]);
+
+  // Navigation functions
+  const nextSlide = useCallback(() => {
+    setDirection(1);
+    setCurrentIndex((prev) => (prev + 1) % projects.length);
+  }, [projects.length]);
+
+  const prevSlide = useCallback(() => {
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev - 1 + projects.length) % projects.length);
+  }, [projects.length]);
+
+  const goToSlide = useCallback((index) => {
+    setDirection(index > currentIndex ? 1 : -1);
+    setCurrentIndex(index);
+  }, [currentIndex]);
+
+  // Pause auto-play on hover
+  const handleMouseEnter = () => setIsAutoPlaying(false);
+  const handleMouseLeave = () => setIsAutoPlaying(autoPlay);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        prevSlide();
+      } else if (e.key === 'ArrowRight') {
+        nextSlide();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [prevSlide, nextSlide]);
+
+  if (!projects.length) return null;
+
+  const currentProject = projects[currentIndex];
+  const IconComponent = currentProject.icon;
 
   return (
-   <div className="relative bg-gradient-to-b from-black via-gray-900 to-black py-12 lg:py-16">
-      {/* Subtle Grid Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `linear-gradient(90deg, transparent 90%, #3b82f6 100%), linear-gradient(0deg, transparent 90%, #3b82f6 100%)`,
-          backgroundSize: '40px 40px',
-        }} />
+    <section 
+      ref={containerRef}
+      className="w-full py-16 bg-gradient-to-br from-black via-gray-900 to-black relative overflow-hidden"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Animated Background Effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 0.3, scale: 1 }}
+          transition={{ duration: 2 }}
+          className="absolute top-20 left-1/4 w-96 h-96 bg-blue-600 rounded-full blur-[100px]"
+        />
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 0.2, scale: 1 }}
+          transition={{ duration: 2, delay: 0.5 }}
+          className="absolute bottom-20 right-1/4 w-96 h-96 bg-blue-500 rounded-full blur-[100px]"
+        />
       </div>
 
-      {/* Blue Glow Effects */}
-      <div className="absolute top-10 left-10 w-48 h-48 md:w-64 md:h-64 bg-blue-600/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-10 right-10 w-48 h-48 md:w-64 md:h-64 bg-blue-500/5 rounded-full blur-3xl" />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Slider Container - Responsive Height */}
-        <div className="relative overflow-hidden rounded-xl md:rounded-2xl bg-gradient-to-br from-gray-900/90 via-black/90 to-gray-900/90 backdrop-blur-sm border border-gray-800/50 shadow-2xl shadow-blue-900/20 min-h-[600px] md:min-h-[500px] lg:h-[500px]">
+      <div className="relative max-w-6xl mx-auto px-4 z-10">
+        
+        {/* Header with Neon Effect */}
+        <motion.div 
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-10"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 rounded-full border border-blue-500/30 mb-4"
+          >
+            <Rocket className="w-4 h-4 text-blue-400" />
+            <span className="text-xs text-blue-400 font-mono">PORTFOLIO</span>
+          </motion.div>
           
-          {/* Corner Accents */}
-          <div className="absolute top-0 left-0 w-12 h-12 md:w-20 md:h-20 border-t border-l border-blue-500/30 rounded-tl-xl md:rounded-tl-2xl" />
-          <div className="absolute top-0 right-0 w-12 h-12 md:w-20 md:h-20 border-t border-r border-blue-500/30 rounded-tr-xl md:rounded-tr-2xl" />
-          <div className="absolute bottom-0 left-0 w-12 h-12 md:w-20 md:h-20 border-b border-l border-blue-500/30 rounded-bl-xl md:rounded-bl-2xl" />
-          <div className="absolute bottom-0 right-0 w-12 h-12 md:w-20 md:h-20 border-b border-r border-blue-500/30 rounded-br-xl md:rounded-br-2xl" />
+          <h2 className="text-4xl md:text-5xl font-bold mb-3">
+            <span className="text-white">Featured </span>
+            <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+              Projects
+            </span>
+          </h2>
+          
+          <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-transparent mx-auto rounded-full" />
+          
+          <p className="text-gray-400 max-w-2xl mx-auto mt-4 text-sm">
+            Real problems → Real solutions → Real results
+          </p>
+        </motion.div>
 
-          {/* Navigation Arrows */}
-          <button
-            onClick={prev}
-            disabled={isAnimating}
-            className="absolute left-2 md:left-3 top-1/2 z-20 -translate-y-1/2 p-2 md:p-2.5 rounded-full bg-black/80 backdrop-blur-sm border border-gray-700 hover:bg-blue-900/40 hover:border-blue-500 transition-all duration-300 group"
-            aria-label="Previous project"
-          >
-            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-white group-hover:text-blue-300 transition-colors" />
-          </button>
+        {/* Slider Container */}
+        <div className="relative">
+          
+          {/* Navigation Buttons */}
+          {projects.length > 1 && (
+            <>
+              <NavigationButton 
+                direction="left" 
+                onClick={prevSlide}
+                disabled={currentIndex === 0}
+              />
+              <NavigationButton 
+                direction="right" 
+                onClick={nextSlide}
+                disabled={currentIndex === projects.length - 1}
+              />
+            </>
+          )}
 
-          <button
-            onClick={next}
-            disabled={isAnimating}
-            className="absolute right-2 md:right-3 top-1/2 z-20 -translate-y-1/2 p-2 md:p-2.5 rounded-full bg-black/80 backdrop-blur-sm border border-gray-700 hover:bg-blue-900/40 hover:border-blue-500 transition-all duration-300 group"
-            aria-label="Next project"
-          >
-            <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-white group-hover:text-blue-300 transition-colors" />
-          </button>
-
-          {/* Track */}
-          <div
-            className="flex h-full transition-transform duration-400 ease-out will-change-transform"
-            style={{ transform: `translateX(-${index * 100}%)` }}
-          >
-            {projects.map((project, i) => (
-              <div
-                key={i}
-                className="min-w-full flex flex-col lg:flex-row h-full"
+          {/* Slide Content */}
+          <div className="overflow-hidden rounded-2xl bg-gray-900/50 backdrop-blur-sm border border-blue-500/20 shadow-2xl">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={currentIndex}
+                custom={direction}
+                initial={{ opacity: 0, x: direction * 300 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: direction * -300 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="flex flex-col md:flex-row"
               >
-                {/* Left Column - Mobile & Desktop Layout */}
-                {isMobile ? (
-                  // Mobile: Stack vertically
-                  <div className="flex-1 p-4 md:p-6">
-                    {/* Mobile Image */}
-                    <div className="relative h-48 md:h-56 rounded-lg overflow-hidden mb-4 group">
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-blue-900/20 to-transparent z-10" />
-                      <img
-                        src={project.img}
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                      <div className="absolute top-3 right-3 z-20">
-                        <a
-                          href={project.liveLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-blue-900/90 to-cyan-900/90 backdrop-blur-sm rounded-full text-blue-300 text-xs font-medium hover:from-blue-800 hover:to-cyan-800 transition-all duration-300"
-                        >
-                          <Globe className="w-3 h-3" />
-                          <span>Live</span>
-                        </a>
-                      </div>
-                    </div>
-
-                    {/* Mobile Content */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center">
-                          <span className="text-white font-bold text-xs">
-                            {String(i + 1).padStart(2, '0')}
-                          </span>
-                        </div>
-                        <h3 className="text-lg md:text-xl font-bold text-white">
-                          {project.title}
-                        </h3>
-                      </div>
-
-                      <p className="text-gray-300 text-sm leading-relaxed">
-                        {project.desc}
-                      </p>
-
-                      {/* Tech Stack Pills - Mobile */}
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <Layers className="w-3 h-3 text-blue-400" />
-                          <span className="text-xs font-medium text-gray-300">Full Stack</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {[...project.frontend, ...project.backend.slice(0, 2)].map((tech, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 text-xs bg-blue-900/30 text-blue-300 rounded-full border border-blue-700/50"
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Action Buttons - Mobile */}
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        <a
-                          href={project.caseLink}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-4 py-2 text-xs font-medium text-white hover:from-blue-500 hover:to-cyan-500 transition-all duration-300"
-                        >
-                          <Eye className="w-3 h-3" />
-                          Case Study
-                        </a>
-                        <a
-                          href={project.liveLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-blue-800/50 bg-blue-900/20 px-4 py-2 text-xs font-medium text-white hover:bg-blue-800/30 hover:border-blue-500 transition-all duration-300"
-                        >
-                          <Globe className="w-3 h-3" />
-                          Live Demo
-                        </a>
-                      </div>
-                    </div>
+                {/* Image Section */}
+                <div className="w-full md:w-2/5 h-72 md:h-auto overflow-hidden relative bg-gradient-to-br from-gray-900 to-black">
+                  <img
+                    src={currentProject.image}
+                    alt={currentProject.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1 bg-black/80 backdrop-blur-sm rounded-full text-xs font-medium text-blue-400 border border-blue-500/30">
+                      {currentProject.category}
+                    </span>
                   </div>
-                ) : (
-                  // Desktop: Split Layout
-                  <>
-                    {/* Left Column - Image & Tech Stack */}
-                    <div className="lg:w-2/5 p-4 lg:p-6 flex flex-col">
-                      {/* Image Container */}
-                      <div className="relative flex-1 rounded-lg lg:rounded-xl overflow-hidden mb-4 group">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-blue-900/20 to-transparent z-10" />
-                        <div className="absolute inset-0 bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors duration-500" />
-                        <img
-                          src={project.img}
-                          alt={project.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        />
-                        
-                        {/* Live Badge */}
-                        <div className="absolute top-3 right-3 z-20">
-                          <a
-                            href={project.liveLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-900/90 to-cyan-900/90 backdrop-blur-sm rounded-full text-blue-300 text-xs font-medium hover:from-blue-800 hover:to-cyan-800 transition-all duration-300 shadow-lg shadow-blue-900/30"
-                          >
-                            <Globe className="w-3 h-3" />
-                            Live
-                          </a>
-                        </div>
-                      </div>
+                </div>
 
-                      {/* Tech Stack Pills - Desktop */}
-                      <div className="space-y-3">
-                        {/* Frontend */}
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <Layers className="w-4 h-4 text-blue-400" />
-                            <span className="text-xs font-medium text-gray-300">Frontend</span>
-                          </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {project.frontend.map((tech, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-1 text-xs bg-blue-900/40 text-blue-300 rounded-full border border-blue-700/50 hover:border-blue-500 transition-colors"
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
+                {/* Content Section */}
+                <div className="w-full md:w-3/5 p-6">
+                  {/* Title & Icon */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="flex items-center gap-3 mb-4"
+                  >
+                    <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/30">
+                      <IconComponent className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">
+                        {currentProject.title}
+                      </h3>
+                      <p className="text-xs text-gray-400">
+                        {currentProject.description}
+                      </p>
+                    </div>
+                  </motion.div>
 
-                        {/* Backend */}
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <Cpu className="w-4 h-4 text-cyan-400" />
-                            <span className="text-xs font-medium text-gray-300">Backend</span>
-                          </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {project.backend.map((tech, idx) => (
-                              <span
-                                key={idx}
-                                className={`px-2 py-1 text-xs rounded-full border ${
-                                  tech === "Spring Boot" || tech === "Microservices"
-                                    ? "bg-emerald-900/40 text-emerald-300 border-emerald-700/50 hover:border-emerald-500"
-                                    : "bg-cyan-900/40 text-cyan-300 border-cyan-700/50 hover:border-cyan-500"
-                                } transition-colors`}
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Database */}
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <Database className="w-4 h-4 text-blue-400" />
-                            <span className="text-xs font-medium text-gray-300">Database</span>
-                          </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {project.database.map((tech, idx) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-1 text-xs bg-blue-800/40 text-blue-200 rounded-full border border-blue-600/50 hover:border-blue-400 transition-colors"
-                              >
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
+                  {/* Problem & Solution */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="space-y-2 mb-4"
+                  >
+                    <div className="flex items-start gap-2 p-2 bg-red-500/5 rounded-lg border border-red-500/20">
+                      <span className="text-red-400 text-sm mt-0.5">⚠️</span>
+                      <div>
+                        <span className="text-xs font-medium text-red-400">Problem: </span>
+                        <span className="text-xs text-gray-400">{currentProject.problem}</span>
                       </div>
                     </div>
-
-                    {/* Right Column - Content */}
-                    <div className="lg:w-3/5 p-4 lg:p-6 flex flex-col justify-center">
-                      <div className={`transition-all duration-400 ${
-                        i === index
-                          ? "opacity-100 translate-y-0"
-                          : "opacity-0 translate-y-2"
-                      }`}>
-                        {/* Project Header */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                              <span className="text-white font-bold text-xs">
-                                {String(i + 1).padStart(2, '0')}
-                              </span>
-                            </div>
-                            <h3 className="text-xl lg:text-2xl font-bold text-white">
-                              {project.title}
-                            </h3>
-                          </div>
-                        </div>
-
-                        {/* Description */}
-                        <p className="text-gray-300 text-sm lg:text-base leading-relaxed mb-6">
-                          {project.desc}
-                        </p>
-
-                        {/* Action Buttons */}
-                        <div className="flex flex-wrap gap-3 mb-6">
-                          <a
-                            href={project.caseLink}
-                            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-600 px-5 py-2.5 text-sm font-medium text-white hover:from-blue-500 hover:to-cyan-500 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/30"
-                          >
-                            <Eye className="w-4 h-4" />
-                            Case Study
-                          </a>
-                          <a
-                            href={project.liveLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-lg border border-blue-800/50 bg-blue-900/20 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800/30 hover:border-blue-500 transition-all duration-300"
-                          >
-                            <Globe className="w-4 h-4" />
-                            Live Demo
-                          </a>
-                          <a
-                            href={project.github}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-900/30 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 hover:border-gray-600 transition-all duration-300"
-                          >
-                            <Code className="w-4 h-4" />
-                            Code
-                          </a>
-                        </div>
-
-                        {/* Performance Stats */}
-                        <div className="mt-4 pt-4 border-t border-gray-800/50 grid grid-cols-3 gap-3 lg:gap-4">
-                          <div className="text-center">
-                            <div className="text-base lg:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">99.9%</div>
-                            <div className="text-xs text-gray-400">Uptime</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-base lg:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">{"<100ms"}</div>
-                            <div className="text-xs text-gray-400">Response</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-base lg:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">10K+</div>
-                            <div className="text-xs text-gray-400">Users</div>
-                          </div>
-                        </div>
+                    <div className="flex items-start gap-2 p-2 bg-green-500/5 rounded-lg border border-green-500/20">
+                      <span className="text-green-400 text-sm mt-0.5">✓</span>
+                      <div>
+                        <span className="text-xs font-medium text-green-400">Solution: </span>
+                        <span className="text-xs text-gray-400">{currentProject.solution}</span>
                       </div>
                     </div>
-                  </>
-                )}
-              </div>
-            ))}
+                  </motion.div>
+
+                  {/* Results Grid */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="grid grid-cols-3 gap-3 mb-4 p-3 bg-black/50 rounded-lg border border-blue-500/20"
+                  >
+                    {currentProject.results.map((result, idx) => (
+                      <ResultMetric key={idx} {...result} />
+                    ))}
+                  </motion.div>
+
+                  {/* Technologies */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="flex flex-wrap gap-2 mb-4"
+                  >
+                    {currentProject.technologies.map((tech, idx) => (
+                      <TechBadge key={idx} tech={tech} index={idx} />
+                    ))}
+                  </motion.div>
+
+                  {/* Action Buttons */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="flex gap-3"
+                  >
+                    <motion.a
+                      href={currentProject.links.demo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:shadow-lg hover:shadow-blue-600/25 transition-all text-sm font-medium"
+                    >
+                      <ExternalLink size={16} />
+                      Live Demo
+                    </motion.a>
+                    <motion.a
+                      href={currentProject.links.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white transition-all text-sm font-medium"
+                    >
+                      <Github size={16} />
+                      Code
+                    </motion.a>
+                    <motion.a
+                      href={currentProject.links.caseStudy}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white transition-all text-sm font-medium"
+                    >
+                      <Eye size={16} />
+                      Details
+                    </motion.a>
+                  </motion.div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Dots Indicator */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 md:gap-2">
-            {projects.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => !isAnimating && setIndex(i)}
-                className={`transition-all duration-300 ${
-                  i === index
-                    ? "w-5 md:w-6 bg-gradient-to-r from-blue-500 to-cyan-400 shadow-lg shadow-blue-500/50"
-                    : "w-1.5 md:w-1.5 bg-gray-700 hover:bg-gray-500"
-                } h-1.5 rounded-full`}
-                aria-label={`Go to project ${i + 1}`}
-              />
-            ))}
-          </div>
+          {projects.length > 1 && (
+            <div className="flex justify-center gap-2 mt-6">
+              {projects.map((_, idx) => (
+                <DotIndicator
+                  key={idx}
+                  active={idx === currentIndex}
+                  onClick={() => goToSlide(idx)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </section>
   );
-}
+};
+
+export default ProjectSlider;

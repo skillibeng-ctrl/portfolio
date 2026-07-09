@@ -1,35 +1,57 @@
+// App.jsx
+import { Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import NavBar from "./components/Navbar";
-import StarsBG from "./components/StarsBG";
+import AboutMe from "./assets/auth/AboutMe";
+import LaserFlow from "./components/LaserFlow";
+
+// Home page sections
 import Hero from "./components/Home";
 import TechStack from "./components/TechStack";
 import ProjectSlider from "./components/ProjectSlider";
 import TestimonialCard from "./components/TestimonialCard";
 import ProcessOverview from "./components/ProcessOverView";
-import StrategySection from "./components/StrategySectiom";
 import WhatIDeliver from "./components/WhatIDeliver";
 import Footer from "./components/Footer";
 
-export default function App() {
-  const [clicked, setClicked] = useState(false);
-
+function HomePage() {
   return (
     <>
-      {/* <StarsBG /> */}
-      <NavBar />
       <Hero />
       <TechStack />
-      <ProjectSlider/>
-      <TestimonialCard/>
-      <ProcessOverview/>
-      <StrategySection/>
-      <WhatIDeliver/>
-      <Footer/>
+      <ProjectSlider />
+      <TestimonialCard />
+      <ProcessOverview />
+      <WhatIDeliver />
+      <Footer />
     </>
   );
 }
 
+export default function App() {
+  const [loading, setLoading] = useState(true);
 
+  // Show LaserFlow loader while loading is true
+  if (loading) {
+    return (
+      <LaserFlow 
+        duration={3000}
+        onComplete={() => setLoading(false)}
+      />
+    );
+  }
+
+  // Main app after loader completes
+  return (
+    <>
+      <NavBar />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutMe />} />
+      </Routes>
+    </>
+  );
+}
 {/* <div className="mt-0.2 relative h-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent" />
         <svg 
