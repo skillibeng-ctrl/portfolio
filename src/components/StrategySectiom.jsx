@@ -272,7 +272,6 @@
 //             falloffStart={1.2}
 //           />
 //         </div>
-
 //         <div className="max-w-6xl mx-auto relative z-10">
 //           {/* Header */}
 //           <motion.div

@@ -18,32 +18,24 @@ const useMediaQuery = (query) => {
     
     return () => media.removeEventListener('change', listener);
   }, [query]);
-
   return matches;
 };
-
 const useReducedMotion = () => {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
 
     const listener = (event) => setPrefersReducedMotion(event.matches);
     mediaQuery.addEventListener('change', listener);
-    
     return () => mediaQuery.removeEventListener('change', listener);
   }, []);
-
   return prefersReducedMotion;
 };
-
 const useMousePosition = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
-
   useEffect(() => {
     let rafId;
-    
     const updatePosition = (e) => {
       rafId = requestAnimationFrame(() => {
         setPosition({ x: e.clientX, y: e.clientY });
@@ -62,10 +54,10 @@ const useMousePosition = () => {
 
 // ============== CONSTANTS ==============
 const STATS = [
-  { value: 40, suffix: "+", label: "Happy Clients", icon: "😊" },
-  { value: 50, suffix: "+", label: "Projects Delivered", icon: "🚀" },
-  { value: 3, suffix: "+", label: "Years Experience", icon: "💼" },
-  { value: 98, suffix: "%", label: "Client Satisfaction", icon: "⭐" }
+  { value: 30, suffix: "+", label: "Projects Built", icon: "🚀" },
+  { value: 12, suffix: "+", label: "Technologies Used", icon: "🛠️" },
+  { value: 100, suffix: "+", label: "GitHub Commits", icon: "💻" },
+  { value: 2, suffix: "", label: "Live Deployments", icon: "🌍" },
 ];
 
 // ============== SUB-COMPONENTS ==============
@@ -221,35 +213,29 @@ GradientOrb.propTypes = {
   delay: PropTypes.number
 };
 
-// ============== MAIN COMPONENT ==============
 export default function Hero() {
   const [isHovered, setIsHovered] = useState(false);
   const mousePosition = useMousePosition();
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  
+
   const heroRef = useRef(null);
   const isInView = useInView(heroRef, { once: true, margin: "-100px" });
   const controls = useAnimation();
-
   useEffect(() => {
     if (isInView) {
       controls.start("visible");
     }
   }, [isInView, controls]);
-
-  const parallaxStyle = useMemo(() => {
+   const parallaxStyle = useMemo(() => {
     if (prefersReducedMotion || isMobile) return {};
-    
     const moveX = (mousePosition.x - window.innerWidth / 2) / 50;
     const moveY = (mousePosition.y - window.innerHeight / 2) / 50;
-    
     return {
       transform: `translate(${moveX}px, ${moveY}px)`,
       transition: 'transform 0.2s ease-out'
     };
   }, [mousePosition, prefersReducedMotion, isMobile]);
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -260,7 +246,6 @@ export default function Hero() {
       },
     },
   };
-
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -272,7 +257,6 @@ export default function Hero() {
       },
     },
   };
-
   return (
     <section
       ref={heroRef}
@@ -348,10 +332,10 @@ export default function Hero() {
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tight mb-6"
             variants={itemVariants}
           >
-            Helping Entrepreneurs
+           From Idea to Production —
             <br />
             <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient-x">
-              Turn Dreams Into Reality
+              I Build Software That Ships
             </span>
           </motion.h1>
 
@@ -394,14 +378,13 @@ export default function Hero() {
                 </motion.svg>
               </span>
             </motion.button>
-
             <motion.button
               className="group px-8 py-4 rounded-xl border border-white/15 bg-white/5 backdrop-blur-md text-white font-medium hover:bg-white/10 hover:border-white/30 transition-all duration-300"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="button"
             >
-              <span className="flex items-center gap-2">
+               <span className="flex items-center gap-2">
                 View Portfolio
                 <motion.svg
                   className="w-5 h-5"
@@ -414,11 +397,9 @@ export default function Hero() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </motion.svg>
-              </span>
+              </span> 
             </motion.button>
           </motion.div>
-
-          {/* Stats Grid */}
           <motion.div 
             className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12"
             variants={itemVariants}
@@ -432,15 +413,14 @@ export default function Hero() {
               />
             ))}
           </motion.div>
-
           {/* Social Proof */}
           <motion.div 
             className="flex flex-wrap justify-center lg:justify-start gap-3"
             variants={itemVariants}
           >
             {[
-              { name: "LinkedIn", followers: "2.5K+", url: "https://linkedin.com/in/yourprofile" },
-              { name: "GitHub", followers: "500+", url: "https://github.com/yourusername" },
+              { name: "LinkedIn", followers: "nano", url: "https://linkedin.com/in/yourprofile" },
+              { name: "GitHub", followers: "nano ", url: "https://github.com/skillibeng-ctrl" },
             ].map((social) => (
               <motion.a
                 key={social.name}
@@ -471,7 +451,6 @@ export default function Hero() {
             ))}
           </motion.div>
         </div>
-
         {/* RIGHT – Profile */}
         <motion.div
           className="relative"
@@ -490,7 +469,6 @@ export default function Hero() {
               transition={{ duration: 0.5 }}
               aria-hidden="true"
             />
-            
             <motion.div
               className="absolute -inset-4 bg-gradient-to-r from-indigo-400/30 to-purple-400/30 rounded-full blur-2xl"
               animate={{
@@ -499,7 +477,6 @@ export default function Hero() {
               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
               aria-hidden="true"
             />
-
             <motion.div
               className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl shadow-black/50"
               style={{ transformStyle: "preserve-3d", perspective: "1000px" }}

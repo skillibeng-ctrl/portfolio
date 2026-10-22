@@ -6,7 +6,7 @@ export default function WhatIDeliver() {
       <div className="max-w-7xl mx-auto text-center">
         {/* Heading */}
         <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-          What I Deliver
+          Service I Offer
         </h2>
 
         <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-12">

@@ -12,28 +12,28 @@ const testimonials = [
     id: 1,
     name: "Project Collaborator",
     role: "Developer, Project Collaboration",
-    text: "Clear communication, reliable delivery, and solid engineering. Working with skilli felt like having an experienced teammate, not just a freelancer.",
+    text: "Clear communication, reliable delivery, and solid engineering. Working with Drev felt like having an experienced teammate, not just a freelancer.",
     highlight: "Communication & Reliability"
   },
   {
     id: 2,
     name: "Backend Developer",
     role: "Developer, Backend Architecture",
-    text: "skilli helped me refactor a messy API and set up proper error handling. He didn't just fix the issues—he showed me why the changes mattered. The code's been running smoothly ever since.",
+    text: "Drev helped me refactor a messy API and set up proper error handling. He didn't just fix the issues—he showed me why the changes mattered. The code's been running smoothly ever since.",
     highlight: "Backend Architecture"
   },
   {
     id: 3,
     name: "Frontend Developer",
     role: "Developer, Frontend Implementation",
-    text: "I had a design but struggled to bring it to life. skilli turned it into a clean, responsive interface faster than I expected. He explained his decisions along the way, which helped me improve my own frontend skills.",
+    text: "I had a design but struggled to bring it to life. Drev turned it into a clean, responsive interface faster than I expected. He explained his decisions along the way, which helped me improve my own frontend skills.",
     highlight: "Frontend Implementation"
   },
   {
     id: 4,
     name: "Database Developer",
     role: "Developer, Database Optimization",
-    text: "Our queries were slowing everything down. skilli restructured the database, added proper indexing, and walked me through the changes. Performance improved immediately, and I actually understood what he did.",
+    text: "Our queries were slowing everything down. Drev restructured the database, added proper indexing, and walked me through the changes. Performance improved immediately, and I actually understood what he did.",
     highlight: "Database Optimization"
   }
 ];

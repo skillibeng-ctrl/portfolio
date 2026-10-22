@@ -66,7 +66,6 @@ const NavBar = () => {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Optimized scroll handling with RAF
   useEffect(() => {
     let ticking = false;
     
@@ -100,7 +99,6 @@ const NavBar = () => {
       rootMargin: '-20% 0px -35% 0px',
       threshold: [0, 0.25, 0.5, 0.75, 1],
     };
-
     const observer = new IntersectionObserver((entries) => {
       // Get the section with the highest intersection ratio
       const visibleSection = entries

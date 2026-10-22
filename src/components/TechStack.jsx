@@ -72,11 +72,6 @@ const TechCard = memo(({ tech, stackType, isHighlight, index, totalLength }) => 
 });
 
 TechCard.displayName = 'TechCard';
-
-// ============================================================================
-// MEMOIZED LEGEND ITEM
-// ============================================================================
-
 const LegendItem = memo(({ color, label }) => (
   <div className="flex items-center gap-2">
     <div className={`w-2.5 h-2.5 rounded-full bg-${color}-500`} />
@@ -117,10 +112,8 @@ export default function Technologies() {
     ...databaseStack,
   ], []);
 
-  // Duplicate for seamless loop
+  
   const items = useMemo(() => [...technologies, ...technologies], [technologies]);
-
-  // Optimized marquee using transform + requestAnimationFrame
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
@@ -155,8 +148,6 @@ export default function Technologies() {
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, [paused, isMobile]);
-
-  // Memoize stack type lookup
   const getStackType = useMemo(() => {
     const map = {};
     frontendStack.forEach(t => map[t.name] = 'frontend');
@@ -164,26 +155,21 @@ export default function Technologies() {
     databaseStack.forEach(t => map[t.name] = 'database');
     return map;
   }, []);
-
   const isHighlight = useMemo(() => {
     const set = new Set();
     backendStack.filter(t => t.highlight).forEach(t => set.add(t.name));
     return set;
   }, []);
-
   return (
     <section 
       ref={sectionRef}
       className="w-full py-12 md:py-20 bg-black relative overflow-hidden"
     >
-      {/* Static background glow — no animation */}
       <div className="absolute inset-0 overflow-hidden opacity-[0.03] pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500 rounded-full blur-3xl" />
       </div>
-
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         {/* Header — Simple fade, no spring */}
         <div className="text-center mb-10 md:mb-14">
           {/* Label */}
@@ -194,22 +180,17 @@ export default function Technologies() {
             </span>
             <div className="h-px w-8 bg-gradient-to-l from-transparent to-blue-500" />
           </div>
-          
           {/* Title */}
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight">
-            Full Stack{" "}
+            Technologies{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
-              Expertise
+              I Work With ;
             </span>
           </h2>
-          
-          {/* Description */}
           <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
             End-to-end development toolkit for building modern, scalable applications
           </p>
         </div>
-
-        {/* Category badges — Static, no animation */}
         <div className="hidden md:flex justify-center gap-6 mb-10">
           {[
             { color: "blue", label: "Frontend" },
@@ -225,8 +206,6 @@ export default function Technologies() {
             </div>
           ))}
         </div>
-
-        {/* Marquee Container */}
         <div
           className="relative mt-8"
           onMouseEnter={() => setPaused(true)}
@@ -234,8 +213,6 @@ export default function Technologies() {
           onTouchStart={() => setPaused(true)}
           onTouchEnd={() => setPaused(false)}
         >
-          
-          {/* Edge gradients */}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-24 sm:w-40 md:w-56 z-10"
             style={{
               background: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 50%, transparent 100%)',
@@ -246,7 +223,6 @@ export default function Technologies() {
               background: 'linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 50%, transparent 100%)',
             }}
           />
-
           <div className="overflow-hidden">
             <div
               ref={trackRef}
@@ -266,8 +242,6 @@ export default function Technologies() {
             </div>
           </div>
         </div>
-
-        {/* Legend — Static */}
         <div className="mt-12 md:mt-16 text-center">
           <div className="inline-flex flex-wrap justify-center gap-6 md:gap-8">
             {[

@@ -242,7 +242,6 @@ const ProcessOverview = () => {
               {progress < 100 ? 'Processing Build' : 'Ready for Launch'}
             </span>
           </motion.div>
-
           <motion.h2 variants={itemVariants} style={{
             fontSize: isMobile ? 'clamp(28px, 8vw, 40px)' : 'clamp(40px, 6vw, 72px)',
             fontWeight: 600,
@@ -253,9 +252,8 @@ const ProcessOverview = () => {
             backgroundClip: 'text',
             marginBottom: '12px'
           }}>
-            Development Pipeline
+           My Development Process
           </motion.h2>
-
           <motion.p variants={itemVariants} style={{
             fontSize: isMobile ? '14px' : '18px',
             color: '#9ca3af',
