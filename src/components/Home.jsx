@@ -495,7 +495,6 @@ export default function Hero() {
                 width="400"
                 height="500"
               />
-              
               <motion.div
                 className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
                 initial={{ opacity: 0 }}
@@ -587,7 +586,7 @@ export default function Hero() {
       </motion.div>
 
       {/* Scroll indicator */}
-      <motion.div
+      {/* <motion.div
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -602,7 +601,7 @@ export default function Hero() {
             transition={{ duration: 2, repeat: Infinity }}
           />
         </motion.div>
-      </motion.div>
+      </motion.div> */}
 
       <style jsx>{`
         @keyframes gradient-x {
