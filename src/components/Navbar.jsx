@@ -253,7 +253,6 @@ const NavBar = () => {
           />
         </div>
       )}
-
       <nav
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
           scrolled
@@ -278,7 +277,6 @@ const NavBar = () => {
                 </span>
               </div>
             </button>
-
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
               {/* Navigation Links */}
@@ -471,7 +469,6 @@ const NavBar = () => {
                 </div>
               </button>
             </div>
-
             {/* Social Links */}
             <div className="pt-4">
               <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 px-2">
@@ -508,7 +505,6 @@ const NavBar = () => {
                 <ExternalLink size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </a>
             </div>
-
             {/* Footer */}
             <div className="pt-6 text-center text-xs text-gray-500 dark:text-gray-400">
               <p>© 2024 John Doe. All rights reserved.</p>
@@ -516,7 +512,6 @@ const NavBar = () => {
           </div>
         </div>
       </div>
-
       {/* Global Styles */}
       <style>{`
         @keyframes fadeIn {
