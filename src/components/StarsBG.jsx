@@ -1,323 +1,218 @@
-// import { Canvas } from "@react-three/fiber";
-// import { Stars, OrbitControls } from "@react-three/drei";
-// import { useEffect, useState } from "react";
-
-// export default function StarsBG() {
-//   const [isDark, setIsDark] = useState(true);
-
-//   useEffect(() => {
-//     // Check initial theme
-//     const checkTheme = () => {
-//       // Check multiple ways to determine theme
-//       const html = document.documentElement;
-//       const hasDarkClass = html.classList.contains('dark');
-//       const localStorageTheme = localStorage.getItem('theme');
-//       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      
-//       // Priority: localStorage > class > system preference
-//       let darkMode = true;
-//       if (localStorageTheme) {
-//         darkMode = localStorageTheme === 'dark';
-//       } else if (hasDarkClass) {
-//         darkMode = true;
-//       } else if (html.classList.contains('light')) {
-//         darkMode = false;
-//       } else {
-//         darkMode = prefersDark;
-//       }
-      
-//       setIsDark(darkMode);
-      
-//       // Apply to HTML element
-//       if (darkMode) {
-//         html.classList.add('dark');
-//         html.classList.remove('light');
-//       } else {
-//         html.classList.add('light');
-//         html.classList.remove('dark');
-//       }
-      
-//       // Apply to body for global styling
-//       document.body.className = darkMode ? 'dark' : 'light';
-      
-//       // Apply CSS variables
-//       const root = document.documentElement;
-//       if (darkMode) {
-//         root.style.setProperty('--text-color', '#ffffff');
-//         root.style.setProperty('--bg-color', '#000000');
-//       } else {
-//         root.style.setProperty('--text-color', '#000000');
-//         root.style.setProperty('--bg-color', '#ffffff');
-//       }
-//     };
-    
-//     checkTheme();
-    
-//     // Watch for theme changes
-//     const observer = new MutationObserver(checkTheme);
-//     observer.observe(document.documentElement, {
-//       attributes: true,
-//       attributeFilter: ['class']
-//     });
-    
-//     // Watch localStorage
-//     const handleStorage = (e) => {
-//       if (e.key === 'theme') checkTheme();
-//     };
-//     window.addEventListener('storage', handleStorage);
-    
-//     return () => {
-//       observer.disconnect();
-//       window.removeEventListener('storage', handleStorage);
-//     };
-//   }, []);
-
-//   return (
-//     <>
-//       <Canvas
-//         camera={{ position: [0, 0, 300], fov: 75, near: 0.1, far: 1000 }}
-//         style={{
-//           position: "fixed",
-//           top: 0,
-//           left: 0,
-//           width: "100vw",
-//           height: "100vh",
-//           zIndex: -1,
-//           background: isDark 
-//             ? "#000000"  // Pure black for dark
-//             : "#ffffff", // Pure white for light
-//           opacity: 0,
-//           animation: "fadeIn 1s ease-out forwards",
-//         }}
-//       >
-//         <Stars
-//           radius={100}
-//           depth={50}
-//           count={isDark ? 5000 : 3000} // Fewer stars in light mode
-//           factor={4}
-//           fade
-//           speed={0.2}
-//           color={isDark ? "#ffffff" : "#000000"} // White stars in dark, black stars in light
-//           size={isDark ? 0.5 : 1.0} // Bigger stars in light mode
-//         />
-//         <OrbitControls 
-//           autoRotate 
-//           autoRotateSpeed={0.2} 
-//           enableZoom={false}
-//         />
-//       </Canvas>
-      
-//       {/* Add global styles */}
-//       <style jsx global>{`
-//         :root {
-//           --text-color: #000000;
-//           --bg-color: #ffffff;
-//         }
-        
-//         .dark {
-//           --text-color: #ffffff;
-//           --bg-color: #000000;
-//         }
-        
-//         body {
-//           color: var(--text-color) !important;
-//           background-color: var(--bg-color) !important;
-//           transition: color 0.3s ease, background-color 0.3s ease !important;
-//         }
-        
-//         h1, h2, h3, h4, h5, h6, p, span, div, a, button {
-//           color: var(--text-color) !important;
-//           transition: color 0.3s ease !important;
-//         }
-        
-//         @keyframes fadeIn {
-//           from { opacity: 0; }
-//           to { opacity: 1; }
-//         }
-        
-//         canvas {
-//           animation: fadeIn 1s ease-out forwards;
-//         }
-        
-//         @media (prefers-reduced-motion: reduce) {
-//           * {
-//             animation-duration: 0.01ms !important;
-//             transition-duration: 0.01ms !important;
-//           }
-//         }
-//       `}</style>
-//     </>
-//   );
-// }
-
+// src/components/ConstellationBG.jsx
+// Lightweight constellation background: slow drifting dots that link up when close.
+//
+// Improvements over the first version:
+//   - DPR-aware canvas (crisp on retina), capped at 2x for perf
+//   - Dots are preserved across resizes (positions scaled) instead of reshuffled
+//   - Link lines batched into 6 alpha buckets -> at most 6 stroke() calls instead of ~N²
+//   - Dots drawn in a single path + single fill()
+//   - Animation loop fully stops when off-screen (IntersectionObserver) and resets after tab switch
+//   - Tunable props, defaults identical to before
 import { useEffect, useRef } from "react";
 
-export default function StarsBG() {
+const TAU = Math.PI * 2;
+const AREA_PER_DOT = 16000;
+const LINK_BUCKETS = 6;
+const FRAME_MS = 33; // ~30fps cap
+
+export default function ConstellationBG({
+  linkDistance = 120,
+  maxDots = 70,
+  speed = 1,
+  dotColor = "rgba(147,197,253,0.8)",
+  linkRgb = "59,130,246",
+  linkOpacity = 0.35,
+}) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    let animationFrame;
-    let time = 0;
+    const parent = canvas?.parentElement;
+    if (!canvas || !parent) return;
 
-    // Define resize function ONCE
-    const resize = () => {
-      const container = canvas.parentElement;
-      if (!container) return;
-      
-      const rect = container.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let w = 0;
+    let h = 0;
+    let dots = [];
+    let raf = 0;
+    let last = 0;
+    let running = false;
+
+    // Precompute one rgba string per alpha bucket.
+    const linkStyles = Array.from({ length: LINK_BUCKETS }, (_, i) => {
+      const t = (i + 0.5) / LINK_BUCKETS;
+      return `rgba(${linkRgb},${(t * linkOpacity).toFixed(3)})`;
+    });
+
+    const targetCount = () => Math.min(maxDots, Math.floor((w * h) / AREA_PER_DOT));
+
+    const makeDot = () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.25 * speed,
+      vy: (Math.random() - 0.5) * 0.25 * speed,
+      r: Math.random() * 1.2 + 0.6,
+    });
+
+    // Keep existing dots across resizes: scale positions, then add/trim to target count.
+    const syncDots = (prevW, prevH) => {
+      if (prevW > 0 && prevH > 0 && dots.length) {
+        const sx = w / prevW;
+        const sy = h / prevH;
+        for (const d of dots) {
+          d.x *= sx;
+          d.y *= sy;
+        }
+      }
+      const target = targetCount();
+      while (dots.length < target) dots.push(makeDot());
+      if (dots.length > target) dots.length = target;
     };
 
     const draw = () => {
-      const width = canvas.width;
-      const height = canvas.height;
-      
-      if (!width || !height) {
-        animationFrame = requestAnimationFrame(draw);
+      if (!w || !h) return;
+      ctx.clearRect(0, 0, w, h);
+
+      // --- Dots: one path, one fill ---
+      if (dots.length) {
+        ctx.fillStyle = dotColor;
+        ctx.beginPath();
+        for (const d of dots) {
+          ctx.moveTo(d.x + d.r, d.y);
+          ctx.arc(d.x, d.y, d.r, 0, TAU);
+        }
+        ctx.fill();
+      }
+
+      // --- Links: bucket by alpha, then one stroke() per bucket ---
+      const maxSq = linkDistance * linkDistance;
+      const buckets = Array.from({ length: LINK_BUCKETS }, () => []);
+
+      for (let i = 0; i < dots.length; i++) {
+        const a = dots[i];
+        for (let j = i + 1; j < dots.length; j++) {
+          const b = dots[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+          const sq = dx * dx + dy * dy;
+          if (sq < maxSq) {
+            const fade = 1 - Math.sqrt(sq) / linkDistance; // 0..1
+            const idx = Math.min(LINK_BUCKETS - 1, (fade * LINK_BUCKETS) | 0);
+            buckets[idx].push(a.x, a.y, b.x, b.y);
+          }
+        }
+      }
+
+      ctx.lineWidth = 1;
+      for (let b = 0; b < LINK_BUCKETS; b++) {
+        const pts = buckets[b];
+        if (!pts.length) continue;
+        ctx.strokeStyle = linkStyles[b];
+        ctx.beginPath();
+        for (let k = 0; k < pts.length; k += 4) {
+          ctx.moveTo(pts[k], pts[k + 1]);
+          ctx.lineTo(pts[k + 2], pts[k + 3]);
+        }
+        ctx.stroke();
+      }
+    };
+
+    const step = (dt) => {
+      const k = dt / 16.67; // normalise to 60fps speed
+      for (const d of dots) {
+        d.x += d.vx * k;
+        d.y += d.vy * k;
+        if (d.x < 0) d.x = w;
+        else if (d.x > w) d.x = 0;
+        if (d.y < 0) d.y = h;
+        else if (d.y > h) d.y = 0;
+      }
+    };
+
+    const loop = (now) => {
+      raf = requestAnimationFrame(loop);
+      if (!last) {
+        last = now;
         return;
       }
-      
-      // Deep space background
-      const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, '#0f0f2a');
-      gradient.addColorStop(0.4, '#0a0a20');
-      gradient.addColorStop(0.7, '#080818');
-      gradient.addColorStop(1, '#050510');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
-      
-      // Aurora waves
-      const auroraColors = [
-        { main: 'rgba(100, 180, 255', glow: 'rgba(130, 210, 255' },
-        { main: 'rgba(120, 100, 255', glow: 'rgba(150, 130, 255' },
-        { main: 'rgba(80, 200, 220', glow: 'rgba(110, 230, 250' },
-        { main: 'rgba(180, 100, 255', glow: 'rgba(210, 130, 255' }
-      ];
-      
-      for (let i = 0; i < 4; i++) {
-        const colors = auroraColors[i % auroraColors.length];
-        
-        ctx.beginPath();
-        const yOffset = height * (0.35 + i * 0.12);
-        const amplitude = 55 + Math.sin(time * 0.002 + i) * 20;
-        const frequency = 0.006 + i * 0.001;
-        
-        for (let x = 0; x <= width; x += 10) {
-          const y = yOffset + Math.sin(x * frequency + time * 0.003 + i * 1.5) * amplitude;
-          if (x === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
-        }
-        
-        ctx.strokeStyle = `${colors.main}, ${0.15 - i * 0.025})`;
-        ctx.lineWidth = 4;
-        ctx.stroke();
-        
-        ctx.beginPath();
-        for (let x = 0; x <= width; x += 10) {
-          const y = yOffset + Math.sin(x * frequency + time * 0.003 + i * 1.5) * amplitude;
-          if (x === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
-        }
-        ctx.strokeStyle = `${colors.glow}, ${0.08 - i * 0.012})`;
-        ctx.lineWidth = 12;
-        ctx.stroke();
-        
-        if (i === 0) {
-          ctx.beginPath();
-          for (let x = 0; x <= width; x += 10) {
-            const y = yOffset + Math.sin(x * frequency + time * 0.003 + i * 1.5) * amplitude;
-            if (x === 0) {
-              ctx.moveTo(x, y);
-            } else {
-              ctx.lineTo(x, y);
-            }
-          }
-          ctx.strokeStyle = `rgba(150, 200, 255, 0.05)`;
-          ctx.lineWidth = 20;
-          ctx.stroke();
-        }
-      }
-      
-      // Stars
-      for (let i = 0; i < 400; i++) {
-        const x = (i * 131) % width;
-        const y = (i * 253) % height;
-        const size = (i % 3 === 0) ? 1.5 : 1;
-        const brightness = 0.4 + Math.sin(time * 0.002 + i) * 0.25;
-        ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
-        ctx.fillRect(x, y, size, size);
-      }
-      
-      // Shooting stars
-      if (time % 180 === 0 && time < 10000) {
-        const startX = Math.random() * width;
-        const startY = Math.random() * height * 0.3;
-        const endX = startX - 100;
-        const endY = startY + 50;
-        
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.strokeStyle = `rgba(255, 255, 255, 0.8)`;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.strokeStyle = `rgba(100, 200, 255, 0.5)`;
-        ctx.lineWidth = 4;
-        ctx.stroke();
-      }
-      
-      time++;
-      animationFrame = requestAnimationFrame(draw);
+      const elapsed = now - last;
+      if (elapsed < FRAME_MS) return;
+      last = now;
+      step(Math.min(elapsed, 100));
+      draw();
     };
 
-    // Use ResizeObserver for accurate sizing
-    const resizeObserver = new ResizeObserver(() => {
-      resize();
+    const start = () => {
+      if (running || reduceMotion) return;
+      running = true;
+      last = 0;
+      raf = requestAnimationFrame(loop);
+    };
+
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    const resize = () => {
+      const rect = parent.getBoundingClientRect();
+      const prevW = w;
+      const prevH = h;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      w = Math.floor(rect.width);
+      h = Math.floor(rect.height);
+      if (!w || !h) return;
+
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // canvas resize resets state
+
+      syncDots(prevW, prevH);
       draw();
+    };
+
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(parent);
+
+    const intersectionObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) start();
+      else stop();
     });
-    
-    // Initial resize
+    intersectionObserver.observe(canvas);
+
+    // Tab switch: rAF pauses, so `last` would be stale on return.
+    const onVisibility = () => {
+      if (!document.hidden) last = 0;
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    // Paint something immediately rather than waiting for the first observer tick.
     resize();
-    
-    // Start observing
-    if (canvas.parentElement) {
-      resizeObserver.observe(canvas.parentElement);
-    }
-    
-    // Start animation
-    draw();
 
     return () => {
-      if (animationFrame) cancelAnimationFrame(animationFrame);
+      stop();
       resizeObserver.disconnect();
+      intersectionObserver.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, []);
+  }, [linkDistance, maxDots, speed, dotColor, linkRgb, linkOpacity]);
 
   return (
     <canvas
       ref={canvasRef}
+      aria-hidden="true"
       style={{
         position: "absolute",
-        top: 0,
-        left: 0,
+        inset: 0,
         width: "100%",
         height: "100%",
-        zIndex: -1,
+        zIndex: 0,
         pointerEvents: "none",
         display: "block",
       }}
