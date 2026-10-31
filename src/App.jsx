@@ -2,7 +2,7 @@
 import { Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import NavBar from "./components/Navbar";
-import AboutMe from "./assets/auth/AboutMe";
+import AboutMe from "./components/AboutMe";
 import LaserFlow from "./components/LaserFlow";
 
 // Home page sections
