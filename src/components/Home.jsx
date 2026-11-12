@@ -419,7 +419,7 @@ export default function Hero() {
             variants={itemVariants}
           >
             {[
-              { name: "LinkedIn", followers: "nano", url: "https://linkedin.com/in/yourprofile" },
+              { name: "LinkedIn", followers: "nano", url: "https://www.linkedin.com/in/skilli-beng-27623b42b?utm_source=share_via&utm_content=profile&utm_medium=member_android" },
               { name: "GitHub", followers: "nano ", url: "https://github.com/skillibeng-ctrl" },
             ].map((social) => (
               <motion.a
