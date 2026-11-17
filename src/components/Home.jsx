@@ -56,8 +56,8 @@ const useMousePosition = () => {
 const STATS = [
   { value: 30, suffix: "+", label: "Projects Built", icon: "🚀" },
   { value: 12, suffix: "+", label: "Technologies Used", icon: "🛠️" },
-  { value: 100, suffix: "+", label: "GitHub Commits", icon: "💻" },
-  { value: 2, suffix: "", label: "Live Deployments", icon: "🌍" },
+  { value: 200, suffix: "+", label: "GitHub Commits", icon: "💻" },
+  { value: 10, suffix: "+", label: "Live Deployments", icon: "🌍" },
 ];
 
 // ============== SUB-COMPONENTS ==============
@@ -338,17 +338,12 @@ export default function Hero() {
               I Build Software That Ships
             </span>
           </motion.h1>
-
-          {/* Subtitle */}
           <motion.p 
             className="text-lg md:text-xl text-gray-300/90 max-w-xl mx-auto lg:mx-0 leading-relaxed mb-10"
             variants={itemVariants}
           >
-            Full-stack developer & UI/UX specialist crafting high-performance digital products 
-            that drive growth and deliver exceptional user experiences.
+            Full Stack Developer specializing in React, Node.js, and MongoDB. I build production-ready applications with a focus on performance optimization, clean architecture, and AI integration.
           </motion.p>
-
-          {/* CTAs */}
           <motion.div 
             className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start mb-12"
             variants={itemVariants}
