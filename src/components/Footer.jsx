@@ -9,9 +9,9 @@ import {
 import { Button } from "@/components/ui/button";
 
 const socialLinks = [
-  { name: "LinkedIn", href: "https://linkedin.com", icon: Linkedin },
+  { name: "LinkedIn", href: "https://www.linkedin.com/in/skilli-beng-27623b42b?utm_source=share_via&utm_content=profile&utm_medium=member_android", icon: Linkedin },
   { name: "Twitter", href: "https://twitter.com", icon: Twitter },
-  { name: "GitHub", href: "https://github.com", icon: Github },
+  { name: "GitHub", href: "https://github.com/skillibeng-ctrl", icon: Github },
 ];
 
 const quickLinks = [
@@ -132,7 +132,7 @@ export default function Footer() {
                 href="mailto:sbend944@email.com" 
                 className="hover:text-purple-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-sm"
               >
-                sbend944@email.com
+                sbeng944@email.com
               </a>
             </li>
           </ul>
@@ -145,10 +145,9 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="relative z-10 mt-16 pt-8 border-t border-white/10 text-center text-gray-500 text-sm">
-        <p>© {new Date().getFullYear()} skilli. All rights reserved.</p>
-      </div>
+     <div className="relative z-10 mt-16 pt-8 border-t border-white/10 text-center text-gray-500 text-sm">
+  <p>© 2024 skilli. All rights reserved.</p>
+</div>
 
       {/* Scroll to Top Button */}
       <button
