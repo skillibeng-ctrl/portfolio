@@ -55,7 +55,7 @@ const PROJECTS = [
     results: [
       { label: "Speed", value: 10, prefix: "+", suffix: "x", icon: Zap },
       { label: "Accuracy", value: 94, suffix: "%", icon: Brain },
-      { label: "API Calls", value: 500, suffix: "k", icon: Database }
+      { label: "API Calls", value: 10, suffix: "k", icon: Database }
     ],
     technologies: ["Node.js", "OpenAI", "Redis", "MongoDB", "Docker"],
     links: {
